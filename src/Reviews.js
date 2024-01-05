@@ -1,5 +1,5 @@
 import React from "react";
-import './reviews.css'
+import './Reviews.css'
 
 const Reviews = ({reviews,products})=>{
   console.log("reviews  ",reviews);

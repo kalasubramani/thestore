@@ -1,5 +1,5 @@
 import React from 'react';
-import './orders.css'
+import './Orders.css'
 
 const Orders = ({ orders, products, lineItems })=> {
   return (
