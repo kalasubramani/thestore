@@ -5,7 +5,8 @@ const {
   createLineItem,
   updateLineItem,
   deleteLineItem,
-  updateOrder
+  updateOrder,
+  fetchReviews
 } = require('./db');
 
 const express = require('express');
@@ -74,5 +75,15 @@ app.delete('/lineItems/:id', async(req, res, next)=> {
     next(ex);
   }
 });
+
+app.get('/reviews', async(req, res, next)=> {
+  try {
+    res.send(await fetchReviews());
+  }
+  catch(ex){
+    next(ex);
+  }
+});
+
 
 module.exports = app;

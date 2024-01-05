@@ -5,11 +5,15 @@ import { Link, HashRouter, Routes, Route } from 'react-router-dom';
 import Products from './Products';
 import Orders from './Orders';
 import Cart from './Cart';
+import AddProduct from './AddProduct'
+import Reviews from './Reviews';
+import  "./index.css" 
 
 const App = ()=> {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [lineItems, setLineItems] = useState([]);
+  const [reviews,setReviews]=useState([]);
 
   useEffect(()=> {
     const fetchData = async()=> {
@@ -35,6 +39,16 @@ const App = ()=> {
     fetchData();
   }, []);
 
+  //fetch reviews from db
+  useEffect(()=> {
+    const fetchReviews = async()=> {
+      const response = await axios.get('/api/reviews');
+      setReviews(response.data);
+      console.log("reviews  ",reviews);
+    };
+    fetchReviews();
+  }, []);
+
   const cart = orders.find((order) => {return order.is_cart});
   if(!cart){
     return null;
@@ -50,7 +64,8 @@ const App = ()=> {
 
   const updateLineItem = async(lineItem)=> {
     const response = await axios.put(`/api/lineItems/${lineItem.id}`, {
-      quantity: lineItem.quantity + 1,
+      // quantity: lineItem.quantity + 1,
+      quantity: lineItem.quantity,
       order_id: cart.id
     });
     setLineItems(lineItems.map( (lineItem) => {
@@ -77,32 +92,64 @@ const App = ()=> {
     return acc += item.quantity;
   }, 0);
 
+  function displayPrice(num){
+    // console.log("displayPrice ", num);
+     //handle numbers less than 2 digits
+      var leftDecimal = num.toString().replace('.', ''),
+          rightDecimal = '00';
+      
+          //handle numbers > 2 digits
+      if(leftDecimal.length > 2){          
+        rightDecimal = leftDecimal.slice(-2);
+        leftDecimal = leftDecimal.slice(0, -2);
+      }
+      
+      var n = Number(leftDecimal+'.'+rightDecimal).toFixed(2);        
+      return (n === "NaN") ? num:n        
+    }
+
   return (
     <div>
-      <nav>
-        <Link to='/products'>Products ({ products.length })</Link>
+      <nav className='navbar'>
+        <Link to='/'>Products ({ products.length })</Link>
         <Link to='/orders'>Orders ({ orders.filter((order) => {return !order.is_cart}).length })</Link>
-        <Link to='/cart'>Cart ({ cartCount })</Link>
+        <Link to='/add-product'>Add New Product</Link>
+        <Link to='/reviews'>View Product Reviews</Link>
+        <Link to='/cart'>Cart ({ cartCount })</Link>                
       </nav>
+      <Routes>
+        <Route path='/add-product' element={<AddProduct/>}/>
+        <Route path='/' element={<Products
+                                          products={ products }
+                                          cartItems = { cartItems }
+                                          createLineItem = { createLineItem }
+                                          updateLineItem = { updateLineItem }
+                                          displayPrice ={displayPrice}
+                                        />}/>
+
+      <Route path='/orders' element={ <Orders
+                                orders = { orders }
+                                products = { products }
+                                lineItems = { lineItems }
+                              />}/>     
+      <Route path='/cart' element={<Cart
+                                cart = { cart }
+                                lineItems = { lineItems }
+                                products = { products }
+                                updateOrder = { updateOrder }
+                                removeFromCart = { removeFromCart }
+                                displayPrice ={displayPrice}
+                                updateLineItem={updateLineItem}
+                              />}/> 
+       <Route path='/reviews' element={<Reviews 
+                                reviews={reviews}
+                                products={ products }
+                                />}    />                 
+      </Routes>
       <div>
-        <Products
-          products={ products }
-          cartItems = { cartItems }
-          createLineItem = { createLineItem }
-          updateLineItem = { updateLineItem }
-        />
-        <Orders
-          orders = { orders }
-          products = { products }
-          lineItems = { lineItems }
-        />
-        <Cart
-          cart = { cart }
-          lineItems = { lineItems }
-          products = { products }
-          updateOrder = { updateOrder }
-          removeFromCart = { removeFromCart }
-        />
+        
+
+        
       </div>
     </div>
   );
