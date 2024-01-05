@@ -1,10 +1,7 @@
 import React from "react";
 import './Reviews.css'
 
-const Reviews = ({reviews,products})=>{
-  console.log("reviews  ",reviews);
-  console.log("products  ",products);
-  
+const Reviews = ({reviews,products})=>{ 
   const productReviews = reviews.reduce((reviewCollection,currentReview)=>{
     //group reviews by prd id
       if(reviewCollection.hasOwnProperty(currentReview.product_id)){
@@ -35,18 +32,10 @@ const Reviews = ({reviews,products})=>{
                                         </>
                                       )
                                     })
-                                 }
-                                {/* <li>{reviewComments[0].comments}</li>
-                                <li>{reviewComments[0].ratings}</li> */}
+                                 }                                
                               </ul>
                         </li>
         })
-
-        
-
-  console.log("productReviews " ,productReviews)
-  console.log("Object.keys(productReviews) " ,Object.keys(productReviews))
-  console.log("Object.entries(productReviews) " ,Object.entries(productReviews))
 
   return (
   <div className="reviewContainer"> 

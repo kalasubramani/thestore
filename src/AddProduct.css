@@ -5,3 +5,11 @@
   padding:10px;
   border:1px double goldenrod;
 }
+.addProductForm{
+  display: flex;
+  flex-direction: column;
+  row-gap: 2em;
+}
+.btnAddproduct{
+ width: fit-content;
+}

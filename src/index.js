@@ -8,6 +8,7 @@ import Cart from './Cart';
 import AddProduct from './AddProduct'
 import Reviews from './Reviews';
 import  "./index.css" 
+import SelectedProduct from './SelectedProduct';
 
 const App = ()=> {
   const [products, setProducts] = useState([]);
@@ -43,8 +44,7 @@ const App = ()=> {
   useEffect(()=> {
     const fetchReviews = async()=> {
       const response = await axios.get('/api/reviews');
-      setReviews(response.data);
-      console.log("reviews  ",reviews);
+      setReviews(response.data);     
     };
     fetchReviews();
   }, []);
@@ -63,8 +63,7 @@ const App = ()=> {
   };
 
   const updateLineItem = async(lineItem)=> {
-    const response = await axios.put(`/api/lineItems/${lineItem.id}`, {
-      // quantity: lineItem.quantity + 1,
+    const response = await axios.put(`/api/lineItems/${lineItem.id}`, {     
       quantity: lineItem.quantity,
       order_id: cart.id
     });
@@ -84,6 +83,13 @@ const App = ()=> {
     setLineItems(lineItems.filter( _lineItem => _lineItem.id !== lineItem.id));
   };
 
+  //add new product
+  const addProduct=async(newProduct)=>{    
+    const response = await axios.post('/api/products',newProduct);    
+    //update state
+    setProducts([...products,response.data]);
+  }
+
   const cartItems = lineItems.filter((lineItem) => {
     return lineItem.order_id === cart.id
   });
@@ -93,7 +99,7 @@ const App = ()=> {
   }, 0);
 
   function displayPrice(num){
-    // console.log("displayPrice ", num);
+   
      //handle numbers less than 2 digits
       var leftDecimal = num.toString().replace('.', ''),
           rightDecimal = '00';
@@ -103,7 +109,7 @@ const App = ()=> {
         rightDecimal = leftDecimal.slice(-2);
         leftDecimal = leftDecimal.slice(0, -2);
       }
-      
+      //form the decimal number to be displayed
       var n = Number(leftDecimal+'.'+rightDecimal).toFixed(2);        
       return (n === "NaN") ? num:n        
     }
@@ -118,7 +124,7 @@ const App = ()=> {
         <Link to='/cart'>Cart ({ cartCount })</Link>                
       </nav>
       <Routes>
-        <Route path='/add-product' element={<AddProduct/>}/>
+        <Route path='/add-product' element={<AddProduct addProduct={addProduct} />}/>
         <Route path='/' element={<Products
                                           products={ products }
                                           cartItems = { cartItems }
@@ -144,7 +150,8 @@ const App = ()=> {
        <Route path='/reviews' element={<Reviews 
                                 reviews={reviews}
                                 products={ products }
-                                />}    />                 
+                                />}    />     
+      <Route path='/products/:id' element={<SelectedProduct products={products} reviews={reviews} displayPrice={displayPrice}/>}/>            
       </Routes>
       <div>
         

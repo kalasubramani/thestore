@@ -6,7 +6,8 @@ const {
   updateLineItem,
   deleteLineItem,
   updateOrder,
-  fetchReviews
+  fetchReviews,
+  addProduct
 } = require('./db');
 
 const express = require('express');
@@ -76,6 +77,7 @@ app.delete('/lineItems/:id', async(req, res, next)=> {
   }
 });
 
+//fetch all reviews
 app.get('/reviews', async(req, res, next)=> {
   try {
     res.send(await fetchReviews());
@@ -85,5 +87,14 @@ app.get('/reviews', async(req, res, next)=> {
   }
 });
 
+//add new product
+app.post('/products',async(req,res,next)=>{
+  try{
+      res.send(await addProduct(req.body));
+  }catch(ex){
+   next(ex)
+  }
+ 
+ })
 
 module.exports = app;

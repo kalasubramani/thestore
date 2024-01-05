@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Cart.css'
 
 const Cart = ({ updateOrder, removeFromCart, lineItems, cart, products, displayPrice,updateLineItem })=> {
-  console.log("cart " ,cart);
+  
   const itemsInCart=lineItems.filter((lineItem) => {return lineItem.order_id === cart.id})
 
   //find total cost

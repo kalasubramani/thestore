@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'
 import "./Products.css"
 
 const Products = ({ products, cartItems, createLineItem, updateLineItem,displayPrice })=> {
@@ -32,9 +33,9 @@ const Products = ({ products, cartItems, createLineItem, updateLineItem,displayP
             const cartItem = cartItems.find(lineItem => lineItem.product_id === product.id);
             return (
               <li key={ product.id }>
-                { product.name }
-                 <span className='price'> ${displayPrice(product.price)} </span>
+                <div><Link to={`/products/${product.id}`}> {  product.name } </Link></div>          
                  <span className='price'>{product.description}</span>
+                 <span className='price'> ${displayPrice(product.price)} </span>
                 {
                   cartItem ? <button onClick={ ()=> updateCount(cartItem)}>Add Another</button>: <button onClick={ ()=> createLineItem(product)}>Add</button>
                 }

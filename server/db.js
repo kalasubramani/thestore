@@ -135,6 +135,15 @@ const fetchReviews = async()=> {
   return response.rows;
 };
 
+//add new product
+const addProduct = async(product)=>{
+  const SQL =`INSERT INTO products (id,name,description,price)
+              VALUES($1,$2,$3,$4)
+              RETURNING *;`
+  const response = await client.query(SQL,[uuidv4(),product.name,product.description,product.price]);
+  return response.rows[0];
+}
+
 const seed = async()=> {
   const SQL = `
     DROP TABLE IF EXISTS line_items;
@@ -209,5 +218,6 @@ module.exports = {
   updateOrder,
   seed,
   fetchReviews,
+  addProduct,
   client
 };
