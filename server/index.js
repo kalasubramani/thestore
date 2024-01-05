@@ -20,8 +20,9 @@ const init = async()=> {
   //seed the tables
   if(process.env.SYNC){ 
     await seed();
+    console.log('create your tables and seed data');
     }
-  console.log('create your tables and seed data');
+  
 
   const port = process.env.PORT || 3001;
   app.listen(port, ()=> {
