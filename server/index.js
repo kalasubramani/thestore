@@ -18,10 +18,10 @@ const init = async()=> {
   await client.connect();
   console.log('connected to database');
   //seed the tables
-  if(process.env.SYNC){ 
+  // if(process.env.SYNC){ 
     await seed();
     console.log('create your tables and seed data');
-    }
+    // }
   
 
   const port = process.env.PORT || 3001;

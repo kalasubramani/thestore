@@ -7,11 +7,22 @@ const {
   deleteLineItem,
   updateOrder,
   fetchReviews,
-  addProduct
+  addProduct,
+  authenticate,
+  findUserByToken
 } = require('./db');
 
 const express = require('express');
 const app = express.Router();
+
+//middleware
+const isLoggedIn = async (req,res,next)=>{
+try{
+
+}catch(error){
+  next(error)
+}
+}
 
 app.get('/products', async(req, res, next)=> {
   try {
@@ -95,6 +106,34 @@ app.post('/products',async(req,res,next)=>{
    next(ex)
   }
  
+ })
+
+ //login page
+ app.post('/login',async (req,res,next)=>{
+  try{
+   const response=await authenticate(req.body);
+   console.log("/login response", response);
+   //no rows returned
+  // if(!response.rows.length){
+  //   const error = Error("Bad credentials")
+  //   error.status = 401;
+  //   throw error;
+  // }
+   res.send({token:response});
+
+  }catch(Error){
+    next(Error)
+  }
+ })
+
+ app.get('/me',async(req,res,next)=>{
+  try{
+    const user = await findUserByToken(req.headers.authorization);
+    console.log("api.js /me",user)
+    res.send(user);
+  }catch(Error){
+    next(Error)
+  }
  })
 
 module.exports = app;

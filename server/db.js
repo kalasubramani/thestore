@@ -2,7 +2,8 @@ const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/the_store_db');
 const { v4 } = require('uuid');
 const uuidv4 = v4;
-
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
 
 const fetchLineItems = async()=> {
   const SQL = `
@@ -34,6 +35,7 @@ const createProduct = async(product)=> {
   return response.rows[0];
 };
 
+//if item is in cart, do not update line item
 const ensureCart = async(lineItem)=> {
   let orderId = lineItem.order_id;
   if(!orderId){
@@ -144,12 +146,73 @@ const addProduct = async(product)=>{
   return response.rows[0];
 }
 
+//add new user
+const createUser = async (user)=>{
+  //user name and pwd can not be empty
+  if(!user.name.trim() || !user.password.trim()){
+    throw Error("User name and password are required.")
+  }
+  //encrypt password using Bcrypt
+  user.password=await bcrypt.hash(user.password,4);
+
+  const SQL = `INSERT INTO users (id,name,password)
+                VALUES ($1,$2,$3)
+                RETURNING *;`
+  const response=await client.query(SQL,[uuidv4(),user.name,user.password]);
+  return response.rows[0];
+}
+
+const authenticate = async (credentials)=>{
+  console.log("db.js/authenticate",credentials)
+  const SQL = `SELECT id,password FROM users
+                WHERE name =$1;`
+  const response = await client.query(SQL,[credentials.username]);
+ console.log("authenticate response  ",response.rows[0]);
+ console.log("credentials.password  ",credentials.password);
+ console.log("response.password ",response.rows[0].password)
+  //no rows returned
+  if(!response.rows.length){
+    const error = Error("Bad credentials")
+    error.status = 401;
+    throw error;
+  }
+
+  //compare pwd against hashed pwd
+  const valid = await bcrypt.compare(credentials.password,response.rows[0].password);
+  console.log( "valid user",valid);
+  return jwt.sign({id:response.rows[0].id},process.env.JWT)
+}
+
+const findUserByToken=async(token)=>{
+ try{
+  console.log("findUserByToken");
+  const payload = await jwt.verify(token,process.env.JWT);
+  console.log("payload",payload)
+  const SQL=`
+            SELECT id,name
+            FROM users
+            WHERE ID=$1`
+  const response = await client.query(SQL,[payload.id])
+  if(!response.rows.length){
+    const errorMsg=Error("Bad Credentials");
+    errorMsg.status=401;
+    throw errorMsg;
+  }
+  console.log("response",response)
+  return response.rows[0];
+ }catch(error){
+  console.log(error)
+ }
+
+} 
+
 const seed = async()=> {
   const SQL = `
     DROP TABLE IF EXISTS line_items;
     DROP TABLE IF EXISTS products CASCADE;
     DROP TABLE IF EXISTS orders;
     DROP TABLE IF EXISTS reviews;
+    DROP TABLE IF EXISTS users;
 
     CREATE TABLE products(
       id UUID PRIMARY KEY,
@@ -183,6 +246,12 @@ const seed = async()=> {
       CHECK (ratings>0 AND ratings<6)
     );
 
+    CREATE TABLE users(
+      id UUID PRIMARY KEY,
+      name  VARCHAR(255) UNIQUE NOT NULL,
+      password  VARCHAR(255) UNIQUE NOT NULL
+    );
+
   `;
   await client.query(SQL);
   const [foo, bar, bazz, quq] = await Promise.all([
@@ -206,6 +275,14 @@ const seed = async()=> {
     createReview({ comments: 'comments Sturdy and strong for kids daily work',ratings : 5,product_id: bar.id }),
     createReview({ comments: 'comments marker dries off quickly',ratings : 2 ,product_id: quq.id}),
   ]);
+
+  //create user records
+  const [user1,user2,user3,user4] = await Promise.all([
+    createUser({name:'admin',password:'admin'}),
+    createUser({name:'user1',password:'user1'}),
+    createUser({name:'user2',password:'user2'}),
+    createUser({name:'user3',password:'user3'})
+  ])
 };
 
 module.exports = {
@@ -219,5 +296,7 @@ module.exports = {
   seed,
   fetchReviews,
   addProduct,
+  authenticate,
+  findUserByToken,
   client
 };
