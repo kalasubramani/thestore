@@ -18,7 +18,10 @@ const app = express.Router();
 //middleware
 const isLoggedIn = async (req,res,next)=>{
 try{
-
+  const user = await findUserByToken(req.headers.authorization);
+  req.user=user; 
+  //go to next part of execution in a route
+  next();
 }catch(error){
   next(error)
 }
@@ -126,11 +129,10 @@ app.post('/products',async(req,res,next)=>{
   }
  })
 
- app.get('/me',async(req,res,next)=>{
-  try{
-    const user = await findUserByToken(req.headers.authorization);
+ app.get('/me',isLoggedIn,async(req,res,next)=>{
+  try{     
     console.log("api.js /me",user)
-    res.send(user);
+    res.send(req.user);
   }catch(Error){
     next(Error)
   }
