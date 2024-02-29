@@ -131,7 +131,7 @@ app.post('/products',async(req,res,next)=>{
 
  app.get('/me',isLoggedIn,async(req,res,next)=>{
   try{     
-    console.log("api.js /me",user)
+    // console.log("api.js /me",user)
     res.send(req.user);
   }catch(Error){
     next(Error)

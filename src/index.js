@@ -122,6 +122,14 @@ const App = () => {
     console.log("src/index response",response);
     const {token}=response.data;
     console.log("token received",token)
+
+    const userResponse = await axios.get('/api/me',{
+      headers:{
+        Authorization:token
+      }
+    })
+
+setauth(userResponse.data)
   }
 
   return (
@@ -129,6 +137,7 @@ const App = () => {
       {
         auth.id ?
           <div>
+            <span>Welcome back {auth.name} !</span>
             <nav className='navbar'>
               <Link to='/'>Products ({products.length})</Link>
               <Link to='/orders'>Orders ({orders.filter((order) => { return !order.is_cart }).length})</Link>
