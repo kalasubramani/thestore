@@ -18,6 +18,24 @@ const App = () => {
   const [reviews, setReviews] = useState([]);
   const [auth, setauth] = useState({});
 
+  const attemptLoginWithToken = async()=>{
+    //retrieve token from local storage
+    const token = window.localStorage.getItem("token"); 
+    if(token){
+      const userResponse = await axios.get('/api/me', {
+        headers: {
+          authorization: token
+        }
+      })
+  
+      setauth(userResponse.data)
+    }
+  }
+
+  useEffect(()=>{
+  attemptLoginWithToken();
+  },[])
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get('/api/products');
@@ -116,21 +134,23 @@ const App = () => {
     return (n === "NaN") ? num : n
   }
 
-  const login = async (credentials)=>{
-    console.log("index.js login",credentials)
-    const response = await axios.post('/api/login',credentials);
-    console.log("src/index response",response);
-    const {token}=response.data;
-    console.log("token received",token)
+  const login = async (credentials) => {
+    console.log("index.js login", credentials)
+    const response = await axios.post('/api/login', credentials);
+    console.log("src/index response", response);
+    const { token } = response.data;
+    console.log("token received", token)
 
-    const userResponse = await axios.get('/api/me',{
-      headers:{
-        Authorization:token
-      }
-    })
-
-setauth(userResponse.data)
+    window.localStorage.setItem("token",token)
+    
+    attemptLoginWithToken();
+    
   }
+
+const logout = ()=>{
+  window.localStorage.removeItem("token");
+  setauth({}); 
+}
 
   return (
     <div>
@@ -144,6 +164,7 @@ setauth(userResponse.data)
               <Link to='/add-product'>Add New Product</Link>
               <Link to='/reviews'>View Product Reviews</Link>
               <Link to='/cart'>Cart ({cartCount})</Link>
+              <button onClick={()=>logout()}>Logout</button>
             </nav>
             <Routes>
               <Route path='/add-product' element={<AddProduct addProduct={addProduct} />} />
@@ -180,7 +201,7 @@ setauth(userResponse.data)
           </div>
           :
           <div>
-            <Login login={login}/>
+            <Login login={login} />
           </div>
       }
     </div>
